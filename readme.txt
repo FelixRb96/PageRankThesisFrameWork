@@ -22,30 +22,22 @@ Use:
 -------------------------
 I: IMPORT SAMPLE DATA.
 
-Sample Data can be accessed by calling the following methods in an
-R console:
+Download Data from:
 
-BerkeleyStanfordWebData <- read.delim("~/BachelorThesisData/Data/BerkeleyStanfordWebData.txt", header=FALSE, comment.char="#")
-GoogleWebData2002 <- read.delim("~/BachelorThesisData/Data/GoogleWebData2002.txt", header=FALSE, comment.char="#")
+https://snap.stanford.edu/data/index.html
+(e.g. web-NotreDame)
+
+and Save in the ./Data folder. 
+
+Sample Data can be accessed by calling the read.delim methods in an
+R console with the following settings:
+
+web.NotreDame.txt <- read.delim("~/BachelorThesisData/Data/web-NotreDame.txt.gz", header=FALSE, comment.char="#")
+(here example for wb-NotreDame)
 
 calling those methods will provide the Data used to display the implementation results in the thesis.
 
-DISCLAIMER:
-I DO NOT OWN THE DATA AND ALL CREDITS GO TO THE RESPECTIVE OWNERS:
 
-THE GOOGLE DATASET IS FROM:
-J. Leskovec, K. Lang, A. Dasgupta, M. Mahoney. 
-Community Structure in Large Networks: 
-Natural Cluster Sizes and the Absence of Large Well-Defined Clusters. 
-Internet Mathematics 6(1) 29--123, 2009.
-Google programming contest, 2002
-
-THE BERKELEY-STANFORD DATA IS FROM:
-
-J. Leskovec, K. Lang, A. Dasgupta, M. Mahoney. 
-Community Structure in Large Networks: 
-Natural Cluster Sizes and the Absence of Large Well-Defined Clusters. 
-Internet Mathematics 6(1) 29--123, 2009.
 
 ---------------------------------
 II: Load the framework:
