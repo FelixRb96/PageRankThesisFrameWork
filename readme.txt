@@ -58,7 +58,7 @@ setUpMatrix(Data, MatrixSize)
 
 and using that matrix for the analyzing methods.
 ============================================================
-For Questions or Ideas please send an E-mail to the provoded 
+For Questions or Ideas please send an E-mail to the provided 
 E-mail adress.
 
 --Felix Reinbott
