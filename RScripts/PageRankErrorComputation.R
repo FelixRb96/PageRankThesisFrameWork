@@ -13,6 +13,8 @@
 recordErrorsForpageRankSteps <- function(LinkMatrix, ALPHA, ERROR) {
   
   source('~/BachelorThesisData/RScripts/PageRankUtil.R')
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
@@ -37,10 +39,49 @@ recordErrorsForpageRankSteps <- function(LinkMatrix, ALPHA, ERROR) {
   return(errorVector)
 }
 
+
+# This is a sample implementation for the use of adaptive PageRank.
+#
+# NOT RECOMMMENDED TO USE, since it is very slow due to the implementation
+# of the matrix data type in R.
+# THEORETICALLY it can outperform the normal PageRank by a lot, if 
+# efficiently implemented in C++.
+recordErrorAdaptivePageRank <- function(LinkMatrix, ALPHA, ERROR) {
+  
+  source('~/BachelorThesisData/RScripts/PageRankUtil.R')
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  timeTracker.start()
+  
+  numberOfPages <- length(LinkMatrix[,1])
+  PageRankVector <- matrix(1/numberOfPages, 1, numberOfPages)
+  danglingPagesIndicator <- abs(rowSums(LinkMatrix) - 1)
+  convergedIndicator <- matrix(0,1, numberOfPages)
+  errorVector <- c()
+  currentError <- ERROR + 1
+  numberOfIterations <- 0
+  while(ERROR <= currentError) {
+    tmp <- PageRankVector
+    PageRankVector <- adaptivePageRankStep(PageRankVector, LinkMatrix, danglingPagesIndicator, convergedIndicator, numberOfPages, ALPHA)
+    convergedIndicator <- convergedPagesIndicator(PageRankVector, tmp, numberOfPages, 10^(-8))
+    currentError <- sum(abs(tmp - PageRankVector))
+    errorVector <- cbind(errorVector, currentError)
+    numberOfIterations <- numberOfIterations + 1
+  }
+  
+  timeTracker.finish()
+  
+  print("ITERATION STEPS: ")
+  print(numberOfIterations)
+  print("ADAPTIVE POWER ITERATION COMPLETE")
+  return(errorVector)
+}
+
+
 #returns the errors for the PageRank algorithm with an Aitken extrapolation at a given step.
 recordErrorForAitken <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAtIterationStep) {
   
   source('~/BachelorThesisData/RScripts/PageRankUtil.R')
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
@@ -73,11 +114,55 @@ recordErrorForAitken <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAtIteratio
   return(errorVector)
 }
 
+# records the Errors for the vector Valued Epsilon ALogrithm for k = 2.
+recordErrorForEpsilonVector2 <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAtIterationStep) {
+  
+  source('~/BachelorThesisData/RScripts/PageRankUtil.R')
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  timeTracker.start()
+  
+  numberOfPages <- length(LinkMatrix[,1])
+  PageRankSaver <- matrix(1/numberOfPages, 3, numberOfPages)
+  danglingPagesIndicator <- abs(rowSums(LinkMatrix) - 1)
+  currentError <- ERROR + 1
+  
+  errorVector <- c()
+  
+  numberOfIterations <- 0
+  if(ERROR <= currentError) {
+    while(ERROR <= currentError) {
+      if(numberOfIterations == ExtrapolateAtIterationStep) {
+        PageRankSaver[3,] <- vectorEpsilon2(PageRankSaver[1,], PageRankSaver[2,], PageRankSaver[3,])
+      }
+      PageRankSaver[1,] <- PageRankSaver[2,]
+      PageRankSaver[2,] <- PageRankSaver[3,]
+      PageRankSaver[3,] <- pageRankStep(PageRankSaver[3,], LinkMatrix, danglingPagesIndicator, numberOfPages, ALPHA)
+      currentError <- sum(abs(PageRankSaver[3,] - PageRankSaver[2,]))
+      errorVector <- cbind(errorVector, currentError)
+      numberOfIterations <- numberOfIterations + 1
+    }
+  }
+  
+  timeTracker.finish()
+  
+  print("ITERATION STEPS: ")
+  print(numberOfIterations)
+  print("ITERATION WITH ONE AITKEN EXTRAPOLATION COMPLETE")
+  return(errorVector)
+}
+
+
+# implementatiion for recording the errors in the least-square PageRank.
+# also displays the elpased time and prints out the sum of the extrapolated 
+# coefficients. sums of the coefficients close to zero relate to 
+# a better approximation of the true PageRank.
 recordErrorForLeastSquare <- function(LinkMatrix, ALPHA, ERROR, vectorSaves, freqLeastSquare, ExtrapolSteps) {
   
   print("===============================")
 
   source('~/BachelorThesisData/RScripts/PageRankUtil.R')
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
@@ -113,46 +198,58 @@ recordErrorForLeastSquare <- function(LinkMatrix, ALPHA, ERROR, vectorSaves, fre
   return(errorVector)
 }
 
-# 
-recordErrorForTSS <- function(LinkMatrix, ALPHA, BETA, ERROR, ErrorInner) {
+
+# computes the PageRank vector with the implementation of the TSS ALgorithm
+# proposed by:
+# Chuanqing Gua,Fei Xie, Ke Zhang
+recordErrorsTSS <- function(LinkMatrix, ALPHA, BETA, ERROR, ERRORINNER) {
   
-  source('~/BachelorThesisData/RScripts/PageRankUtil.R')
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
   PageRankSaver <- matrix(1/numberOfPages, 3, numberOfPages)
   danglingPagesIndicator <- abs(rowSums(LinkMatrix) - 1)
+  PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] * sum(danglingPagesIndicator * matrix(1/numberOfPages, 1, numberOfPages))
   
-  PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[1,] %*% danglingPagesIndicator %*% matrix(1/numberOfPages, 1, numberOfPages)
+  Residual <- c()
+  
   numberOfIterations <- 0
   numberOfInnerIterations <- 0
   
-  errorVector <- c()
   currentError <- ERROR + 1
+  errorSaver <- c()
   
- while(ERROR <= currentError) {
-   PageRankSaver[1,] <- PageRankSaver[2,]
-   reverseSplitting <- 
-  Residual <- ErrorInner + 1
-   while(ErrorInner <= sum(abs(Residual - PageRankSaver[2,]))) {
-     PageRankSaver[2,] <- (ALPHA * PageRankSaver[3,] 
-     + ALPHA * PageRankSaver[3,] %*% danglingPagesIndicator %*% matrix(1/numberOfPages, 1, numberOfPages)
-     + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages))
-     PageRankSaver[2,] <- PageRankSaver[2,] / sum(abs(PageRankSaver[2,]))
-     PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] %*% danglingPagesIndicator %*% matrix(1/numberOfPages, 1, numberOfPages)
-     PageRankSaver[3,] <- PageRankSaver[3,] / sum(abs(PageRankSaver[3,]))
-     Residual <- (ALPHA - BETA) * PageRankSaver[3,] + (1 - ALPHA) * matrix(1 / numberOfPages, 1, numberOfPages)
-     numberOfInnerIterations <- numberOfInnerIterations + 1
-     print(sum(abs(Residual - PageRankSaver[2,])))
-   }
-   PageRankSaver[2,] <- Residual + BETA * PageRankSaver[3,]
-   PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] %*% danglingPagesIndicator %*% matrix(1/numberOfPages, 1, numberOfPages)
-   currentError <- sum(abs(PageRankSaver[2,] - PageRankSaver[1,]))
-   print(currentError)
-   
-   errorVector <- cbind(errorVector, currentError)
-   numberOfIterations <- numberOfIterations + 1
- }
+  while(ERROR <= currentError) {
+    
+    PageRankSaver[2,] <- ALPHA * PageRankSaver[3,] + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages)
+    PageRankSaver[2,] <- PageRankSaver[2,] / sum(abs(PageRankSaver[2,]))
+    PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] * sum(danglingPagesIndicator * 1/numberOfPages)
+    PageRankSaver[3,] <- PageRankSaver[3,] / sum(abs(PageRankSaver[3,]))
+    Residual <- (ALPHA - BETA) * PageRankSaver[3,] + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages)
+    
+    currentErrorInner <- ERRORINNER + 1
+    
+    while(ERRORINNER <= currentErrorInner) {
+      PageRankSaver[1,] <- PageRankSaver[2,]
+      PageRankSaver[2,] <- Residual + BETA* PageRankSaver[3,]
+      PageRankSaver[2,] <- PageRankSaver[2,] / sum(abs(PageRankSaver[2,]))
+      PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] * sum(danglingPagesIndicator * 1/numberOfPages)
+      PageRankSaver[3,] <- PageRankSaver[3,] / sum(abs(PageRankSaver[3,]))
+      currentErrorInner <- sum(abs(Residual + BETA * PageRankSaver[3,] - PageRankSaver[2,]))
+      
+      numberOfInnerIterations <- numberOfInnerIterations + 1
+    }
+    
+    currentError <- sum(abs(ALPHA * PageRankSaver[3,] + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages) - PageRankSaver[2,]))
+    errorSaver <- cbind(errorSaver, currentError)
+    
+    numberOfIterations <- numberOfIterations + 1
+  }
+  
+  PageRankSaver[2,] <- ALPHA * PageRankSaver[3,] + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages) - PageRankSaver[2,]
+  
   
   timeTracker.finish()
   
@@ -161,47 +258,59 @@ recordErrorForTSS <- function(LinkMatrix, ALPHA, BETA, ERROR, ErrorInner) {
   print("OUTER ITERATION STEPS: ")
   print(numberOfIterations)
   print("ITERATION WITH TWO STEP SPLITTING ITERATION COMPLETE")
-  return(errorVector)
+  return(errorSaver)
 }
 
-# 
-recordErrorForRTSS <- function(LinkMatrix, ALPHA, BETA, GAMMA, ERROR, ErrorInner) {
+# computes the PageRank vector with the implementation of the RTSS ALgorithm
+# stable implementation by refining the TSS algorithm by:
+# Chuanqing Gua,Fei Xie, Ke Zhang
+recordErrorsRTSS <- function(LinkMatrix, ALPHA, BETA, GAMMA, ERROR, ERRORINNER) {
   
-  source('~/BachelorThesisData/RScripts/PageRankUtil.R')
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
   PageRankSaver <- matrix(1/numberOfPages, 3, numberOfPages)
   danglingPagesIndicator <- abs(rowSums(LinkMatrix) - 1)
+  PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] * sum(danglingPagesIndicator * matrix(1/numberOfPages, 1, numberOfPages))
   
-  PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[1,] %*% danglingPagesIndicator %*% matrix(1/numberOfPages, 1, numberOfPages)
+  Residual <- c()
+  
   numberOfIterations <- 0
   numberOfInnerIterations <- 0
   
-  errorVector <- c()
   currentError <- ERROR + 1
+  errorSaver <- c()
   
   while(ERROR <= currentError) {
-    PageRankSaver[1,] <- PageRankSaver[2,]
-      Residual <- ErrorInner + 1
-    while(ErrorInner <= sum(abs(Residual - PageRankSaver[2,]))) {
-      PageRankSaver[2,] <- (ALPHA * PageRankSaver[3,] 
-      + ALPHA * PageRankSaver[3,] %*% danglingPagesIndicator %*% matrix(1/numberOfPages, 1, numberOfPages)
-      + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages))
-      PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] %*% danglingPagesIndicator %*% matrix(1/numberOfPages, 1, numberOfPages)
+    
+    PageRankSaver[2,] <- ALPHA * PageRankSaver[3,] + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages)
+    PageRankSaver[2,] <- PageRankSaver[2,] / sum(abs(PageRankSaver[2,]))
+    PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] * sum(danglingPagesIndicator * 1/numberOfPages)
+    PageRankSaver[3,] <- PageRankSaver[3,] / sum(abs(PageRankSaver[3,]))
+    Residual <- (GAMMA - 1) / GAMMA * PageRankSaver[2,] + (ALPHA - BETA) / GAMMA * PageRankSaver[3,] + (1 - ALPHA) / GAMMA * matrix(1/numberOfPages, 1, numberOfPages)
+    
+    currentErrorInner <- ERRORINNER + 1
+    
+    while(ERRORINNER <= currentErrorInner) {
+      PageRankSaver[1,] <- PageRankSaver[2,]
+      PageRankSaver[2,] <- Residual + BETA / GAMMA * PageRankSaver[3,]
+      PageRankSaver[2,] <- PageRankSaver[2,] / sum(abs(PageRankSaver[2,]))
+      PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] * sum(danglingPagesIndicator * 1/numberOfPages)
       PageRankSaver[3,] <- PageRankSaver[3,] / sum(abs(PageRankSaver[3,]))
-      Residual <- ((GAMMA - 1) / GAMMA * PageRankSaver[2,] 
-      + (ALPHA - BETA) / GAMMA * PageRankSaver[3,] 
-      + (1 - ALPHA) / GAMMA * matrix(1/numberOfPages, 1, numberOfPages))
+      currentErrorInner <- sum(abs(Residual + BETA / GAMMA * PageRankSaver[3,] - PageRankSaver[2,]))
+      
       numberOfInnerIterations <- numberOfInnerIterations + 1
     }
-    PageRankSaver[2,] <- Residual + BETA / GAMMA * PageRankSaver[3,]
-    PageRankSaver[3,] <- PageRankSaver[2,] %*% LinkMatrix + PageRankSaver[2,] %*% danglingPagesIndicator %*% matrix(1/numberOfPages, 1, numberOfPages)
-    currentError <- sum(abs(PageRankSaver[2,] - PageRankSaver[1,]))
     
-    errorVector <- cbind(errorVector, currentError)
+    currentError <- sum(abs(ALPHA * PageRankSaver[3,] + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages) - PageRankSaver[2,]))
+    errorSaver <- cbind(errorSaver, currentError)
+    
     numberOfIterations <- numberOfIterations + 1
   }
+  
+  PageRankSaver[2,] <- ALPHA * PageRankSaver[3,] + (1 - ALPHA) * matrix(1/numberOfPages, 1, numberOfPages) - PageRankSaver[2,]
   
   timeTracker.finish()
   
@@ -210,10 +319,5 @@ recordErrorForRTSS <- function(LinkMatrix, ALPHA, BETA, GAMMA, ERROR, ErrorInner
   print("OUTER ITERATION STEPS: ")
   print(numberOfIterations)
   print("ITERATION WITH RELAXED TWO STEP SPLITTING ITERATION COMPLETE")
-  return(errorVector)
+  return(errorSaver)
 }
-
-recordErrorArnoldiExtrapoaltion <- function(LinkMatrix, ALPHA, ERROR, BETA, restart, tolNorm){
-  # TODO
-}
-

@@ -10,7 +10,9 @@
 # Function to transform the given Data Frames to a link matrix, where m[i,j] represents, if
 # page i links to page j. The given LinkMatrix is row stochastic so left side multiplication has
 # to be applied to compute the PageRank.
-#
+#  
+# Usually extracts the dense part of the web graph which 
+# gives nice properties for the analyis of the algorithms.
 transformDataToSubWebLinkMatrix <- function(x, subWebSize) {
   dataLength <- length(x[,"V1"])
   resultMatrix <- matrix(0, subWebSize, subWebSize)
