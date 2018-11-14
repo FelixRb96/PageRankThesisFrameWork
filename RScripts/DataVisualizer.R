@@ -100,14 +100,14 @@ PageRankChangeReportForAlpha <-function(LinkMatrix, ERROR, numberOfPages){
   
   source('~/BachelorThesisData/RScripts/PageRankComputation.R')
   
-  ALPHAS <- 2:9 / 10
+  ALPHAS <- 6:9 / 10
   len <- length(LinkMatrix[1,])
   for(i in 1:8){
     PageRankCrude <- computePageRankByError(LinkMatrix, ALPHAS[i], ERROR)
     PageRankAitken <- computePageRankAitken(LinkMatrix, ALPHAS[i], ERROR, 5)
     PageRankLS <- computePageRankLeastSquare(LinkMatrix, ALPHAS[i], ERROR, 4, 10, 3)
-    PageRankTSS <- computePageRankTSS(LinkMatrix, ALPHAS[i], ALPHAS[i] + 0.05, ERROR, 0.5)
-    PageRankRTSS <- computePageRankRTSS(LinkMatrix, ALPHAS[i], ALPHAS[i] + 0.05, ALPHAS[i] - 0.1, ERROR, 1.5)
+    PageRankTSS <- computePageRankTSS(LinkMatrix, ALPHAS[i], 0.5, ERROR, 0.5)
+    PageRankRTSS <- computePageRankRTSS(LinkMatrix, ALPHAS[i], 0.5, 0.95, ERROR, 0.5)
     
     sortedPageRankCrude <- sort(PageRankCrude, decreasing = TRUE)[1:numberOfPages]
     sortedPageRankAitken <- sort(PageRankAitken, decreasing = TRUE)[1:numberOfPages]
