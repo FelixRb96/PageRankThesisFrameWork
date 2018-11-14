@@ -102,7 +102,7 @@ PageRankChangeReportForAlpha <-function(LinkMatrix, ERROR, numberOfPages){
   
   ALPHAS <- 6:9 / 10
   len <- length(LinkMatrix[1,])
-  for(i in 1:8){
+  for(i in 1:4){
     PageRankCrude <- computePageRankByError(LinkMatrix, ALPHAS[i], ERROR)
     PageRankAitken <- computePageRankAitken(LinkMatrix, ALPHAS[i], ERROR, 5)
     PageRankLS <- computePageRankLeastSquare(LinkMatrix, ALPHAS[i], ERROR, 4, 10, 3)
@@ -115,6 +115,8 @@ PageRankChangeReportForAlpha <-function(LinkMatrix, ERROR, numberOfPages){
     sortedPageRankTSS <- sort(PageRankTSS, decreasing = TRUE)[1:numberOfPages]
     sortedPageRankRTSS <- sort(PageRankRTSS, decreasing = TRUE)[1:numberOfPages]
     
+    print("==================ALPHA====================")
+    print(ALPHAS[i])
     print("==================CRUDE====================")
     print(which(PageRankCrude %in% sortedPageRankCrude))
     print(sortedPageRankCrude)
