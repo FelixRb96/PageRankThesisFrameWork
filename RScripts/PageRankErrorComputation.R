@@ -151,8 +151,46 @@ recordErrorForEpsilonVector2 <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAt
   return(errorVector)
 }
 
+# returns the errors for the PageRank algorithm with an Aitken extrapolation at a given step.
+recordErrorForIterativeAitken <- function(LinkMatrix, ALPHA, ERROR, nIterations) {
+  
+  source('~/BachelorThesisData/RScripts/PageRankUtil.R')
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  timeTracker.start()
+  
+  numberOfPages <- length(LinkMatrix[,1])
+  PageRankSaver <- matrix(1/numberOfPages, nIterations, numberOfPages)
+  danglingPagesIndicator <- abs(rowSums(LinkMatrix) - 1)
+  currentError <- ERROR + 1
+  
+  errorVector <- c()
+  
+  numberOfIterations <- 0
+  if(ERROR <= currentError) {
+    while(ERROR <= currentError) {
+      if(numberOfIterations == nIterations) {
+        PageRankSaver[nIterations,] <- iterativeAitken(PageRankSaver)
+      }
+      for(i in 1 : (length(PageRankSaver[,1] - 1))) {
+        PageRankSaver[i,] <- PageRankSaver[i+1]
+      }
+      PageRankSaver[nIterations, ] <- pageRankStep(PageRankSaver[nIterations,], LinkMatrix, danglingPagesIndicator, numberOfPages, ALPHA)
+      currentError <- sum(abs(PageRankSaver[nIterations,] - PageRankSaver[nIterations - 1,]))
+      errorVector <- cbind(errorVector, currentError)
+      numberOfIterations <- numberOfIterations + 1
+    }
+  }
+  
+  timeTracker.finish()
+  
+  print("ITERATION STEPS: ")
+  print(numberOfIterations)
+  print("ITERATION WITH ONE AITKEN EXTRAPOLATION COMPLETE")
+  return(errorVector)
+}
 
-# implementatiion for recording the errors in the least-square PageRank.
+
+# implementation for recording the errors in the least-square PageRank.
 # also displays the elpased time and prints out the sum of the extrapolated 
 # coefficients. sums of the coefficients close to zero relate to 
 # a better approximation of the true PageRank.

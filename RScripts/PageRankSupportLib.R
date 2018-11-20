@@ -64,8 +64,38 @@ aitkenExtrapolation <- function(x1, x2, x3) {
 }
 
 vectorEpsilon2 <- function(x1, x2, x3) {
-  deltaVec <- (x3 - x2) / (sum(x3 - x2))^2 - (x2 - x1) / (sum(x2 - x1))^2
-  return(x1 + deltaVec / (sum(deltaVec))^2)
+  deltaVec <- (x3 - x2) / (sum((x3 - x2)^2)) - (x2 - x1) / (sum((x2 - x1)^2))
+  return(x2 + deltaVec / (sum(deltaVec^2)))
+}
+
+# given a number of inputs of the size 2k + 3 k = 0,1,2,3,....
+# coputes the highest possible order of the epsilon algorithm.
+vectorEpsilon <- function(savedIterations) {
+  numberOfInputs <- length(savedIterations[,1])
+  while(numberOfInputs >= 3) {
+    savematrix <- c()
+    for(i in 3: numberOfInputs) {
+      savematrix <- rbind(savematrix, vectorEpsilon2(savedIterations[i-2,], savedIterations[i-1,], savedIterations[i,]))
+    }
+    numberOfInputs <- numberOfInputs - 2
+    savedIterations <- savematrix
+  }
+  return(savedIterations)
+}
+
+# basically a componentwise epsilon using the aitken formula,
+# same requirements like the @vectorEpsilon 
+iterativeAitken <- function(savedIterations) {
+  numberOfInputs <- length(savedIterations[,1])
+  while (numberOfInputs >= 3) {
+    saveMatrix <- c()
+    for( i in 3: numberOfInputs) {
+      saveMatrix <- rbind(saveMatrix, aitkenExtrapolation(savedIterations[i-2,], savedIterations[i-1,], savedIterations[i,]))
+    }
+    numberOfInputs <- numberOfInputs - 2
+    savedIterations <- saveMatrix
+  }
+  return(savedIterations)
 }
 
 #-----------------------------------------------------------------------------------------
