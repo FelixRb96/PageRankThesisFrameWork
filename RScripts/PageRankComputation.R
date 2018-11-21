@@ -29,6 +29,7 @@ computePageRankByError <- function(LinkMatrix, ALPHA, ERROR) {
     currentError <- sum(abs(tmp - PageRankVector))
     numberOfIterations <- numberOfIterations + 1
   }
+  
   print("ITERATION STEPS: ")
   print(numberOfIterations)
   print("POWER ITERATION COMPLETE")
@@ -44,6 +45,8 @@ computeAdaptivePageRankByError <- function(LinkMatrix, ALPHA, ERROR) {
   numberOfPages <- length(LinkMatrix[,1])
   PageRankVector <- matrix(1/numberOfPages, 1, numberOfPages)
   danglingPagesIndicator <- abs(rowSums(LinkMatrix) - 1)
+  convergedIndicator <- matrix(0,1, numberOfPages)
+  
   
   currentError <- ERROR + 1
   numberOfIterations <- 0
