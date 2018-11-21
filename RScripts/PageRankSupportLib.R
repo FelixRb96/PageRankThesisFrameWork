@@ -31,7 +31,7 @@ adaptivePageRankStep <- function(xn, LinkMatrix, danglingPagesIndicator, converg
   returnVector <- xn
   for(i in 1:numberOfPages) {
     if(convergedPagesIndicator[i] == 0) {
-      returnAlpha <-  xn %*% LinkMatrix[,i] * ALPHA + danglingPagesIndicator[i] * sum(xn) * 1 / numberOfPages * ALPHA 
+      returnAlpha <-  sum (xn * LinkMatrix[,i]) * ALPHA + danglingPagesIndicator[i] * sum(xn) * 1 / numberOfPages * ALPHA 
       returnRest <- + (1 - ALPHA) * 1/numberOfPages  
       returnVector[i] <- returnAlpha + returnRest
     }

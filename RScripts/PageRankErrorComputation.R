@@ -62,7 +62,7 @@ recordErrorAdaptivePageRank <- function(LinkMatrix, ALPHA, ERROR) {
   while(ERROR <= currentError) {
     tmp <- PageRankVector
     PageRankVector <- adaptivePageRankStep(PageRankVector, LinkMatrix, danglingPagesIndicator, convergedIndicator, numberOfPages, ALPHA)
-    convergedIndicator <- convergedPagesIndicator(PageRankVector, tmp, numberOfPages, 10^(-8))
+    convergedIndicator <- convergedPagesIndicator(PageRankVector, tmp, numberOfPages, ERROR / numberOfPages)
     currentError <- sum(abs(tmp - PageRankVector))
     errorVector <- cbind(errorVector, currentError)
     numberOfIterations <- numberOfIterations + 1
@@ -242,6 +242,7 @@ recordErrorForLeastSquare <- function(LinkMatrix, ALPHA, ERROR, vectorSaves, fre
 # Chuanqing Gua,Fei Xie, Ke Zhang
 recordErrorsTSS <- function(LinkMatrix, ALPHA, BETA, ERROR, ERRORINNER) {
   
+  source('~/BachelorThesisData/RScripts/PageRankUtil.R')
   source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
   
   timeTracker.start()
@@ -304,6 +305,7 @@ recordErrorsTSS <- function(LinkMatrix, ALPHA, BETA, ERROR, ERRORINNER) {
 # Chuanqing Gua,Fei Xie, Ke Zhang
 recordErrorsRTSS <- function(LinkMatrix, ALPHA, BETA, GAMMA, ERROR, ERRORINNER) {
   
+  source('~/BachelorThesisData/RScripts/PageRankUtil.R')
   source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
   
   timeTracker.start()

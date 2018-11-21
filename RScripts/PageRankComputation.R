@@ -35,6 +35,31 @@ computePageRankByError <- function(LinkMatrix, ALPHA, ERROR) {
   return(PageRankVector)
 }
 
+# computes the PageRank vector to the given error > 0 with the absolute norm.
+# ALPHA must be chosen from [0,1] and is the weight for the LinkMatrix.
+computeAdaptivePageRankByError <- function(LinkMatrix, ALPHA, ERROR) {
+  
+  source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
+  numberOfPages <- length(LinkMatrix[,1])
+  PageRankVector <- matrix(1/numberOfPages, 1, numberOfPages)
+  danglingPagesIndicator <- abs(rowSums(LinkMatrix) - 1)
+  
+  currentError <- ERROR + 1
+  numberOfIterations <- 0
+  while(ERROR <= currentError) {
+    tmp <- PageRankVector
+    PageRankVector <- adaptivePageRankStep(PageRankVector, LinkMatrix, danglingPagesIndicator, convergedIndicator, numberOfPages, ALPHA)
+    convergedIndicator <- convergedPagesIndicator(PageRankVector, tmp, numberOfPages, ERROR / numberOfPages)
+    currentError <- sum(abs(tmp - PageRankVector))
+    numberOfIterations <- numberOfIterations + 1
+  }
+  print("ITERATION STEPS: ")
+  print(numberOfIterations)
+  print("Adaptive POWER ITERATION COMPLETE")
+  return(PageRankVector)
+}
+
 # computes the PageRank vector by applying ONE Aitken delta-squared
 # step at the given iteration step.
 computePageRankAitken <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAtIterationStep) {
