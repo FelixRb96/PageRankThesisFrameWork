@@ -22,7 +22,7 @@ timeTracker.start <- function() {
 
 # ends the timer and prints the elapsed time.
 timeTracker.finish <- function() {
-  print("===============================")
+  print("==============TIME ELAPSED=================")
   tictoc::toc()
 }
 
