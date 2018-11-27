@@ -36,6 +36,9 @@ computePageRankByError <- function(LinkMatrix, ALPHA, ERROR) {
   return(PageRankVector)
 }
 
+
+#---------------------ADAPTIVE PAGERANK----------------------------
+
 # computes the PageRank vector to the given error > 0 with the absolute norm.
 # ALPHA must be chosen from [0,1] and is the weight for the LinkMatrix.
 computeAdaptivePageRankByError <- function(LinkMatrix, ALPHA, ERROR) {
@@ -62,6 +65,9 @@ computeAdaptivePageRankByError <- function(LinkMatrix, ALPHA, ERROR) {
   print("Adaptive POWER ITERATION COMPLETE")
   return(PageRankVector)
 }
+
+
+#---------------------EXTRAPOLATION-----------------------------
 
 # computes the PageRank vector by applying ONE Aitken delta-squared
 # step at the given iteration step.
@@ -132,6 +138,8 @@ computePageRankLeastSquare <- function(LinkMatrix, ALPHA, ERROR, vectorSaves, le
   return(PageRankSaver[vectorSaves,])
 }
 
+
+#---------------------TWO STEP SPLITTING-----------------------------
 
 # computes the PageRank vector with the implementation of the TSS ALgorithm
 computePageRankTSS <- function(LinkMatrix, ALPHA, BETA, ERROR, ERRORINNER) {
@@ -242,6 +250,7 @@ computePageRankRTSS <- function(LinkMatrix, ALPHA, BETA, GAMMA, ERROR, ERRORINNE
   return(PageRankSaver[2,] / sum(abs(PageRankSaver[2,])))
 }
 
+#---------------------BY ITERATIONS-----------------------------
 
 # computes the PageRank by a number of given iterations. Simple method for acquiring a close approximation
 # of the PageRank Vector.

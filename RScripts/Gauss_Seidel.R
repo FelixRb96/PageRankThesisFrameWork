@@ -62,8 +62,8 @@ gauss_seidel <- function(A, x, b, ERROR, maxItrerations) {
 }
 
 
-# sets up a unity matrix with the 
-# dimesnion n x n. 
+# sets up a identity matrix with the 
+# dimension n x n. 
 # Of course only intger choices for
 # n make sense. 
 setUpIdMatrix <- function(n) {

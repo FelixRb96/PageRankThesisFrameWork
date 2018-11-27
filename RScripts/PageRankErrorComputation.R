@@ -40,6 +40,8 @@ recordErrorsForpageRankSteps <- function(LinkMatrix, ALPHA, ERROR) {
 }
 
 
+#--------------------ADAPTIVE PAGERANK------------------------------------------
+
 # This is a sample implementation for the use of adaptive PageRank.
 #
 # NOT RECOMMMENDED TO USE, since it is very slow due to the implementation
@@ -50,6 +52,7 @@ recordErrorAdaptivePageRank <- function(LinkMatrix, ALPHA, ERROR) {
   
   source('~/BachelorThesisData/RScripts/PageRankUtil.R')
   source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
@@ -77,11 +80,14 @@ recordErrorAdaptivePageRank <- function(LinkMatrix, ALPHA, ERROR) {
 }
 
 
+#-------------------------EXTRAPOLATION ALGORITHMS-----------------------------------
+
 #returns the errors for the PageRank algorithm with an Aitken extrapolation at a given step.
 recordErrorForAitken <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAtIterationStep) {
   
   source('~/BachelorThesisData/RScripts/PageRankUtil.R')
   source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
@@ -119,6 +125,7 @@ recordErrorForEpsilonVector2 <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAt
   
   source('~/BachelorThesisData/RScripts/PageRankUtil.R')
   source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
@@ -152,10 +159,13 @@ recordErrorForEpsilonVector2 <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAt
 }
 
 # returns the errors for the PageRank algorithm with an Aitken extrapolation at a given step.
+# 
+# WARNING TURNS UNSTABLE REALLY FAST
 recordErrorForIterativeAitken <- function(LinkMatrix, ALPHA, ERROR, nIterations) {
   
   source('~/BachelorThesisData/RScripts/PageRankUtil.R')
   source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
+  
   timeTracker.start()
   
   numberOfPages <- length(LinkMatrix[,1])
@@ -168,11 +178,11 @@ recordErrorForIterativeAitken <- function(LinkMatrix, ALPHA, ERROR, nIterations)
   numberOfIterations <- 0
   if(ERROR <= currentError) {
     while(ERROR <= currentError) {
-      if(numberOfIterations == nIterations) {
+      if(numberOfIterations + 1 == nIterations) {
         PageRankSaver[nIterations,] <- iterativeAitken(PageRankSaver)
       }
-      for(i in 1 : (length(PageRankSaver[,1] - 1))) {
-        PageRankSaver[i,] <- PageRankSaver[i+1]
+      for(i in 1 : (length(PageRankSaver[,1]) - 1)) {
+        PageRankSaver[i,] <- PageRankSaver[i+1,]
       }
       PageRankSaver[nIterations, ] <- pageRankStep(PageRankSaver[nIterations,], LinkMatrix, danglingPagesIndicator, numberOfPages, ALPHA)
       currentError <- sum(abs(PageRankSaver[nIterations,] - PageRankSaver[nIterations - 1,]))
@@ -236,6 +246,8 @@ recordErrorForLeastSquare <- function(LinkMatrix, ALPHA, ERROR, vectorSaves, fre
   return(errorVector)
 }
 
+
+#-----------------TWO STEP SPLITTING ALGORITHMS----------------------
 
 # computes the PageRank vector with the implementation of the TSS ALgorithm
 # proposed by:

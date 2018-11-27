@@ -137,8 +137,8 @@ PageRankChangeReportForAlpha <-function(LinkMatrix, ERROR, numberOfPages){
 
 #------------------------------ConvergedPages------------------------------------
 
-# TODO compare for the different impl's.
-# TODO refine for more diffenent plots.
+# reports converged pages for the standard power-iteration
+# and plots that behaviour.
 reportConvergedPages <- function(LinkMatrix, ALPHA, ERROR) {
   
   source('~/BachelorThesisData/RScripts/PageRankConvergedCounter.R')
