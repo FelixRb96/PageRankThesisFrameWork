@@ -204,6 +204,8 @@ recordErrorForIterativeAitken <- function(LinkMatrix, ALPHA, ERROR, nIterations)
 # also displays the elpased time and prints out the sum of the extrapolated 
 # coefficients. sums of the coefficients close to zero relate to 
 # a better approximation of the true PageRank.
+#
+# vectorsaves MUST be >= 4
 recordErrorForLeastSquare <- function(LinkMatrix, ALPHA, ERROR, vectorSaves, freqLeastSquare, ExtrapolSteps) {
   
   print("===============================")

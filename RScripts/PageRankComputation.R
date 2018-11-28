@@ -106,6 +106,8 @@ computePageRankAitken <- function(LinkMatrix, ALPHA, ERROR, ExtrapolateAtIterati
 #
 # WARNING: choosing a high number for vectorsaves can cause ERRORS for the least-square step, since the 
 # saved vectors are in a cauchy-sequence, thus approach each other leading to stability problems.
+#
+# vectorsaves MUST be >= 4
 computePageRankLeastSquare <- function(LinkMatrix, ALPHA, ERROR, vectorSaves, leastSquareFrequency, Extrapolsteps) {
   
   source('~/BachelorThesisData/RScripts/PageRankSupportLib.R')
@@ -124,7 +126,7 @@ computePageRankLeastSquare <- function(LinkMatrix, ALPHA, ERROR, vectorSaves, le
     }
     PageRankSaver[vectorSaves,] <- pageRankStep(PageRankSaver[vectorSaves,], LinkMatrix, danglingPagesIndicator, numberOfPages, ALPHA)
     currentError <- sum(abs(PageRankSaver[vectorSaves,] - PageRankSaver[vectorSaves - 1,]))
-    
+
     if((numberOfIterations  + vectorSaves + 1) %%  leastSquareFrequency == 0 && numberOfIterations > 0 && numberExtrapolSteps < Extrapolsteps) {
       PageRankSaver[vectorSaves,] <- quadraticExtrapolation(PageRankSaver)
       numberExtrapolSteps <- numberExtrapolSteps + 1

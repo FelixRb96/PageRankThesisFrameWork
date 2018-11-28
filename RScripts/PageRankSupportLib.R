@@ -59,8 +59,6 @@ convergedPagesIndicator <- function(x1, x2, lengthVector,ERROR) {
 # method for the Aitken extrapolation step with three iterates in ascending order (of course x1 is the first x3 the last iterate)
 aitkenExtrapolation <- function(x1, x2, x3) {
   updateEntries <- (x3 - 2 * x2 + x1) != matrix(0, 1, length(x1))
-  print(updateEntries[1:20])
-  print(length(updateEntries))
   extrapolatedVector <- x3
   extrapolatedVector[TRUE %in% updateEntries] <- x3 - (x3 - x2)^2 / (x3 - 2 * x2 + x1)
   # extrapolatedVector <- extrapolatedVector / sum(abs(extrapolatedVector))
