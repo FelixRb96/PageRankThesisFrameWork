@@ -35,6 +35,31 @@ transformDataToSubWebLinkMatrix <- function(x, subWebSize) {
   return(resultMatrix)
 }
 
+# same as @transformDataToSUvWebLinkMatrix, but takes an variable window for the
+# start and end page
+transformDataToSubWebLinkMatrixInIndexWindow <- function(x, startIndex, endIndex) {
+  dataLength <- length(x[,"V1"])
+  subWebSize <- endIndex - startIndex
+  resultMatrix <- matrix(0, subWebSize, subWebSize)
+  for (i in  1:dataLength){
+    if((x[i, "V1"] >= startIndex) && (x[i, "V2"] >= startIndex) && (x[i, "V1"] <= endIndex) && (x[i, "V2"] <= endIndex)){
+      resultMatrix[x[i, "V1"] -startIndex, x[i, "V2"] - startIndex] <- 1
+      print("FOUND ENTRY... Continuing")
+    }
+    if(i == dataLength) {
+      print("ADJACENCY MATRIX CONSTRUCTED")
+    }
+  }
+  rowSumsLinkMatrix <- rowSums(resultMatrix)
+  for(i in 1:subWebSize){
+    if(rowSumsLinkMatrix[i] != 0) {
+      resultMatrix[i,] <- resultMatrix[i,] / rowSumsLinkMatrix[i]
+    }
+  }
+  print("LINK MATRIX CONSTRUCTED")
+  return(resultMatrix)
+}
+
 # Same as @transformDataToSubWebMatrix, but this time with the selection of random pages from the web.
 # WARNING: is very very slow and usually only gives a matrix of nearly only zeros.
 transformDataToRandomSubWebLinkMatrix <- function(x, subWebSize) {
@@ -63,6 +88,15 @@ transformDataToRandomSubWebLinkMatrix <- function(x, subWebSize) {
   }
   print("LINK MATRIX CONSTRUCTED")
   return(resultMatrix)
+}
+
+# find the number of dangling pages in the original data.
+findNumberOfDanglingPages <- function(x, nPages) {
+  danglingIndicator <- rep(1, nPages)
+  for(i in 1:length(x[,"V2"])) {
+    danglingIndicator[x[i,"V2"]] <- 0
+  }
+  return(sum(danglingIndicator))
 }
 
 #------------------------------------------------------------------
